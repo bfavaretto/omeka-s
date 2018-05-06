@@ -9,6 +9,7 @@
 /files/
 /modules/
 /themes/
+/tmp/
 /application/test/config/database.ini
 /vendor/
 /node_modules/
