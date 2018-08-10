@@ -33,6 +33,21 @@ class SiteSettingsForm extends Form
         ]);
 
         $this->add([
+            'name' => 'pagination_per_page',
+            'type' => 'Text',
+            'options' => [
+                'label' => 'Results per page', // @translate
+                'info' => 'The maximum number of results per page on browse pages. Leave blank to use the global setting.', // @translate
+            ],
+            'attributes' => [
+                'value' => $settings->get('pagination_per_page'),
+                'required' => false,
+                'id' => 'pagination_per_page',
+                'placeholder' => 'Use global setting', // @translate
+            ],
+        ]);
+
+        $this->add([
             'name' => 'attachment_link_type',
             'type' => 'Select',
             'options' => [
@@ -94,14 +109,30 @@ class SiteSettingsForm extends Form
             ],
         ]);
         $this->add([
-            'name' => 'show_user_bar',
+            'name' => 'show_page_pagination',
             'type' => 'checkbox',
             'options' => [
-                'label' => 'Always show user bar on public views', // @translate
+                'label' => 'Show page pagination',
+                'info' => 'Show pagination that helps users follow a linear narrative through a site.', // @translate
             ],
             'attributes' => [
-                'id' => 'show_user_bar',
-                'value' => $settings->get('show_user_bar', false),
+                'id' => 'show_page_pagination',
+                'value' => $settings->get('show_page_pagination', true),
+            ],
+        ]);
+        $this->add([
+            'name' => 'show_user_bar',
+            'type' => 'radio',
+            'options' => [
+                'label' => 'Show user bar on public views', // @translate
+                'value_options' => [
+                    '-1' => 'Never', // @translate
+                    '0' => 'When identified', // @translate
+                    '1' => 'Always', // @translate
+                ],
+            ],
+            'attributes' => [
+                'value' => $settings->get('show_user_bar', '0'),
             ],
         ]);
         $this->add([
@@ -128,6 +159,17 @@ class SiteSettingsForm extends Form
             'allow_empty' => true,
             'attributes' => [
                 'id' => 'locale',
+            ],
+        ]);
+        $inputFilter->add([
+            'name' => 'pagination_per_page',
+            'required' => false,
+            'filters' => [
+                ['name' => 'StringTrim'],
+                ['name' => 'ToNull'],
+            ],
+            'validators' => [
+                ['name' => 'Digits'],
             ],
         ]);
         $filterEvent = new Event('form.add_input_filters', $this, ['inputFilter' => $inputFilter]);

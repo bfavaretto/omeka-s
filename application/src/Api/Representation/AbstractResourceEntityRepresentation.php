@@ -3,8 +3,6 @@ namespace Omeka\Api\Representation;
 
 use Omeka\Api\Adapter\AdapterInterface;
 use Omeka\Entity\Resource;
-use Omeka\Entity\Value;
-use Omeka\Entity\Vocabulary;
 
 /**
  * Abstract resource entity representation.
@@ -178,7 +176,7 @@ abstract class AbstractResourceEntityRepresentation extends AbstractEntityRepres
     /**
      * Get the date-time when this resource was created.
      *
-     * @return DateTime
+     * @return \DateTime
      */
     public function created()
     {
@@ -188,7 +186,7 @@ abstract class AbstractResourceEntityRepresentation extends AbstractEntityRepres
     /**
      * Get the date-time when this resource was last modified.
      *
-     * @return DateTime
+     * @return \DateTime
      */
     public function modified()
     {

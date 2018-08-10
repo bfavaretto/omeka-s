@@ -171,8 +171,11 @@ class IndexController extends AbstractActionController
                     }
                     $this->messenger()->addSuccess('Page successfully created'); // @translate
                     return $this->redirect()->toRoute(
-                        'admin/site/slug/page',
-                        ['action' => 'index'],
+                        'admin/site/slug/page/default',
+                        [
+                            'page-slug' => $page->slug(),
+                            'action' => 'edit',
+                        ],
                         true
                     );
                 }
@@ -247,10 +250,11 @@ class IndexController extends AbstractActionController
         $itemSets = [];
         foreach ($site->siteItemSets() as $siteItemSet) {
             $itemSet = $siteItemSet->itemSet();
+            $owner = $itemSet->owner();
             $itemSets[] = [
                 'id' => $itemSet->id(),
                 'title' => $itemSet->displayTitle(),
-                'email' => $itemSet->owner()->email(),
+                'email' => $owner ? $owner->email() : null,
             ];
         }
 

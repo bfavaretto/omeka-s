@@ -11,7 +11,8 @@ class ThumbnailRenderer implements RendererInterface
     ) {
         $thumbnailType = isset($options['thumbnailType']) ? $options['thumbnailType'] : 'large';
         $link = array_key_exists('link', $options) ? $options['link'] : 'original';
-        $img = $view->thumbnail($media, $thumbnailType);
+        $attribs = isset($options['thumbnailAttribs']) ? $options['thumbnailAttribs'] : [];
+        $img = $view->thumbnail($media, $thumbnailType, $attribs);
         if (!$link) {
             return $img;
         }
@@ -29,7 +30,7 @@ class ThumbnailRenderer implements RendererInterface
      *
      * @param MediaRepresentation $media
      * @param string $linkType Type of link: 'original', 'item', and 'media' are valid
-     * @throws InvalidArgumentException On unrecognized $linkType
+     * @throws \InvalidArgumentException On unrecognized $linkType
      * @return string
      */
     protected function getLinkUrl(MediaRepresentation $media, $linkType)

@@ -50,9 +50,9 @@ return [
             OMEKA_PATH . '/application/src/Entity',
         ],
         'resource_discriminator_map' => [
-            'Omeka\Entity\Item' => 'Omeka\Entity\Item',
-            'Omeka\Entity\Media' => 'Omeka\Entity\Media',
-            'Omeka\Entity\ItemSet' => 'Omeka\Entity\ItemSet',
+            'Omeka\Entity\Item' => Entity\Item::class,
+            'Omeka\Entity\Media' => Entity\Media::class,
+            'Omeka\Entity\ItemSet' => Entity\ItemSet::class,
         ],
         'filters' => [
             'resource_visibility' => Db\Filter\ResourceVisibilityFilter::class,
@@ -375,6 +375,7 @@ return [
             'filterSelector' => View\Helper\FilterSelector::class,
             'propertySelector' => View\Helper\PropertySelector::class,
             'itemSetSelector' => View\Helper\ItemSetSelector::class,
+            'userSelector' => View\Helper\UserSelector::class,
             'searchFilters' => View\Helper\SearchFilters::class,
             'blockAttachmentsForm' => View\Helper\BlockAttachmentsForm::class,
             'blockShowTitleSelect' => View\Helper\BlockShowTitleSelect::class,
@@ -391,6 +392,7 @@ return [
             'themeSettingAssetUrl' => View\Helper\ThemeSettingAssetUrl::class,
             'formColorPicker' => Form\View\Helper\FormColorPicker::class,
             'thumbnail' => View\Helper\Thumbnail::class,
+            'userBar' => View\Helper\UserBar::class,
         ],
         'factories' => [
             'api' => Service\ViewHelper\ApiFactory::class,

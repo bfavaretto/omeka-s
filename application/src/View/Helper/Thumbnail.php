@@ -24,10 +24,17 @@ class Thumbnail extends AbstractHtmlElement
         }
 
         $attribs['src'] = $primaryMedia->thumbnailUrl($type);
+
+        // Trigger attribs event
+        $triggerHelper = $this->getView()->plugin('trigger');
+        $params = compact('attribs', 'primaryMedia', 'representation', 'type');
+        $params = $triggerHelper('view_helper.thumbnail.attribs', $params, true);
+        $attribs = $params['attribs'];
+
         if (!isset($attribs['alt'])) {
             $attribs['alt'] = '';
         }
 
-        return sprintf('<img %s>', $this->htmlAttribs($attribs));
+        return sprintf('<img%s>', $this->htmlAttribs($attribs));
     }
 }
