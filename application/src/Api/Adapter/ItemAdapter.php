@@ -9,9 +9,6 @@ use Omeka\Stdlib\ErrorStore;
 
 class ItemAdapter extends AbstractResourceEntityAdapter
 {
-    /**
-     * {@inheritDoc}
-     */
     protected $sortFields = [
         'id' => 'id',
         'is_public' => 'isPublic',
@@ -19,40 +16,24 @@ class ItemAdapter extends AbstractResourceEntityAdapter
         'modified' => 'modified',
     ];
 
-    /**
-     * {@inheritDoc}
-     */
     public function getResourceName()
     {
         return 'items';
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getRepresentationClass()
     {
-        return 'Omeka\Api\Representation\ItemRepresentation';
+        return \Omeka\Api\Representation\ItemRepresentation::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getEntityClass()
     {
-        return 'Omeka\Entity\Item';
+        return \Omeka\Entity\Item::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function buildQuery(QueryBuilder $qb, array $query)
     {
         parent::buildQuery($qb, $query);
-
-        if (isset($query['id'])) {
-            $qb->andWhere($qb->expr()->eq('Omeka\Entity\Item.id', $query['id']));
-        }
 
         if (isset($query['item_set_id'])) {
             $itemSets = $query['item_set_id'];
@@ -71,7 +52,7 @@ class ItemAdapter extends AbstractResourceEntityAdapter
             }
         }
 
-        if (!empty($query['site_id'])) {
+        if (isset($query['site_id']) && is_numeric($query['site_id'])) {
             $siteAdapter = $this->getAdapter('sites');
             try {
                 $site = $siteAdapter->findEntity($query['site_id']);
@@ -116,9 +97,6 @@ class ItemAdapter extends AbstractResourceEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function validateRequest(Request $request, ErrorStore $errorStore)
     {
         $data = $request->getContent();
@@ -135,9 +113,6 @@ class ItemAdapter extends AbstractResourceEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function hydrate(Request $request, EntityInterface $entity,
         ErrorStore $errorStore
     ) {
@@ -229,9 +204,6 @@ class ItemAdapter extends AbstractResourceEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function preprocessBatchUpdate(array $data, Request $request)
     {
         $rawData = $request->getContent();

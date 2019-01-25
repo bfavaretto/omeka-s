@@ -11,9 +11,6 @@ use Omeka\Stdlib\ErrorStore;
 
 class MediaAdapter extends AbstractResourceEntityAdapter
 {
-    /**
-     * {@inheritDoc}
-     */
     protected $sortFields = [
         'id' => 'id',
         'ingester' => 'ingester',
@@ -23,46 +20,33 @@ class MediaAdapter extends AbstractResourceEntityAdapter
         'modified' => 'modified',
     ];
 
-    /**
-     * {@inheritDoc}
-     */
     public function getResourceName()
     {
         return 'media';
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getRepresentationClass()
     {
-        return 'Omeka\Api\Representation\MediaRepresentation';
+        return \Omeka\Api\Representation\MediaRepresentation::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getEntityClass()
     {
-        return 'Omeka\Entity\Media';
+        return \Omeka\Entity\Media::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function buildQuery(QueryBuilder $qb, array $query)
     {
         parent::buildQuery($qb, $query);
 
-        if (isset($query['id'])) {
-            $qb->andWhere($qb->expr()->eq('Omeka\Entity\Media.id', $query['id']));
+        if (isset($query['item_id']) && is_numeric($query['item_id'])) {
+            $qb->andWhere($qb->expr()->eq(
+                'Omeka\Entity\Media.item',
+                $this->createNamedParameter($qb, $query['item_id'])
+            ));
         }
 
-        if (isset($query['item_id'])) {
-            $qb->andWhere($qb->expr()->eq('Omeka\Entity\Media.item', $query['item_id']));
-        }
-
-        if (isset($query['site_id'])) {
+        if (isset($query['site_id']) && is_numeric($query['site_id'])) {
             $itemAlias = $this->createAlias();
             $qb->innerJoin(
                 'Omeka\Entity\Media.item',
@@ -95,9 +79,6 @@ class MediaAdapter extends AbstractResourceEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function validateRequest(Request $request, ErrorStore $errorStore)
     {
         $data = $request->getContent();
@@ -108,9 +89,6 @@ class MediaAdapter extends AbstractResourceEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function hydrate(Request $request, EntityInterface $entity,
         ErrorStore $errorStore
     ) {
@@ -161,9 +139,6 @@ class MediaAdapter extends AbstractResourceEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function validateEntity(EntityInterface $entity,
         ErrorStore $errorStore
     ) {
@@ -173,9 +148,6 @@ class MediaAdapter extends AbstractResourceEntityAdapter
         parent::validateEntity($entity, $errorStore);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function hydrateOwner(Request $request, EntityInterface $entity)
     {
         if ($entity->getItem() instanceof Item) {

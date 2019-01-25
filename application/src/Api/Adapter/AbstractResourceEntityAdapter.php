@@ -11,9 +11,6 @@ use Omeka\Stdlib\Message;
 
 abstract class AbstractResourceEntityAdapter extends AbstractEntityAdapter
 {
-    /**
-     * {@inheritDoc}
-     */
     public function buildQuery(QueryBuilder $qb, array $query)
     {
         $this->buildPropertyQuery($qb, $query);
@@ -26,7 +23,14 @@ abstract class AbstractResourceEntityAdapter extends AbstractEntityAdapter
             ]]]);
         }
 
-        if (isset($query['owner_id'])) {
+        if (isset($query['id']) && is_numeric($query['id'])) {
+            $qb->andWhere($qb->expr()->eq(
+                $this->getEntityClass() . '.id',
+                $this->createNamedParameter($qb, $query['id'])
+            ));
+        }
+
+        if (isset($query['owner_id']) && is_numeric($query['owner_id'])) {
             $userAlias = $this->createAlias();
             $qb->innerJoin(
                 $this->getEntityClass() . '.owner',
@@ -50,28 +54,32 @@ abstract class AbstractResourceEntityAdapter extends AbstractEntityAdapter
             );
         }
 
-        if (isset($query['resource_class_id']) && is_numeric($query['resource_class_id'])) {
-            $resourceClassAlias = $this->createAlias();
-            $qb->innerJoin(
-                $this->getEntityClass() . '.resourceClass',
-                $resourceClassAlias
-            );
-            $qb->andWhere($qb->expr()->eq(
-                "$resourceClassAlias.id",
-                $this->createNamedParameter($qb, $query['resource_class_id']))
-            );
+        if (isset($query['resource_class_id'])) {
+            $classes = $query['resource_class_id'];
+            if (!is_array($classes)) {
+                $classes = [$classes];
+            }
+            $classes = array_filter($classes, 'is_numeric');
+            if ($classes) {
+                $qb->andWhere($qb->expr()->in(
+                    $this->getEntityClass() . '.resourceClass',
+                    $this->createNamedParameter($qb, $classes)
+                ));
+            }
         }
 
-        if (isset($query['resource_template_id']) && is_numeric($query['resource_template_id'])) {
-            $resourceTemplateAlias = $this->createAlias();
-            $qb->innerJoin(
-                $this->getEntityClass() . '.resourceTemplate',
-                $resourceTemplateAlias
-            );
-            $qb->andWhere($qb->expr()->eq(
-                "$resourceTemplateAlias.id",
-                $this->createNamedParameter($qb, $query['resource_template_id']))
-            );
+        if (isset($query['resource_template_id'])) {
+            $templates = $query['resource_template_id'];
+            if (!is_array($templates)) {
+                $templates = [$templates];
+            }
+            $templates = array_filter($templates, 'is_numeric');
+            if ($templates) {
+                $qb->andWhere($qb->expr()->in(
+                    $this->getEntityClass() . '.resourceTemplate',
+                    $this->createNamedParameter($qb, $templates)
+                ));
+            }
         }
 
         if (isset($query['is_public'])) {
@@ -82,9 +90,6 @@ abstract class AbstractResourceEntityAdapter extends AbstractEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function sortQuery(QueryBuilder $qb, array $query)
     {
         if (is_string($query['sort_by'])) {
@@ -114,9 +119,6 @@ abstract class AbstractResourceEntityAdapter extends AbstractEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function hydrate(Request $request, EntityInterface $entity,
         ErrorStore $errorStore
     ) {
@@ -137,6 +139,9 @@ abstract class AbstractResourceEntityAdapter extends AbstractEntityAdapter
 
         // o:resource_template
         $this->hydrateResourceTemplate($request, $entity);
+
+        // o:thumbnail
+        $this->hydrateThumbnail($request, $entity);
 
         $this->updateTimestamps($request, $entity);
     }
@@ -299,7 +304,7 @@ abstract class AbstractResourceEntityAdapter extends AbstractEntityAdapter
      * @param string $term
      * @return EntityInterface
      */
-    protected function getPropertyByTerm($term)
+    public function getPropertyByTerm($term)
     {
         if (!$this->isTerm($term)) {
             return null;
@@ -330,10 +335,6 @@ abstract class AbstractResourceEntityAdapter extends AbstractEntityAdapter
         $offset = (is_numeric($page) && is_numeric($perPage))
             ? (($page - 1) * $perPage)
             : null;
-        $findBy = ['valueResource' => $resource];
-        if ($property) {
-            $findBy['property'] = $property;
-        }
 
         // Need to check visibility manually here
         $services = $this->getServiceLocator();
@@ -355,7 +356,7 @@ abstract class AbstractResourceEntityAdapter extends AbstractEntityAdapter
         }
 
         if ($property) {
-            $qb->where('v.property', $this->createNamedParameter($qb, $property));
+            $qb->andWhere($qb->expr()->eq('v.property', $this->createNamedParameter($qb, $property)));
         }
 
         $qb->setMaxResults($perPage);
@@ -400,9 +401,6 @@ abstract class AbstractResourceEntityAdapter extends AbstractEntityAdapter
             ->getResult();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function preprocessBatchUpdate(array $data, Request $request)
     {
         $rawData = $request->getContent();

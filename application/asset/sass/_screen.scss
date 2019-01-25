@@ -152,7 +152,7 @@ body {
         display: block;
         background-color: #fff;
         min-height: 3 * $spacing-large;
-        max-height: 5 * $spacing-large;
+        max-height: 10 * $spacing-large;
         overflow-y: auto;
     }
 
@@ -1394,7 +1394,8 @@ div[role="main"] {
     }
 }
 
-td .o-icon-private {
+td .o-icon-private,
+td .o-icon-user-inactive {
     display: inline-block;
     vertical-align: bottom;
     margin-left: .5em;
@@ -2162,6 +2163,7 @@ input[type="text"].value-language,
 
     #resource-values div.value {
         display: flex;
+        align-items: flex-start;
     }
 
     .value {
@@ -2233,16 +2235,23 @@ input[type="text"].value-language,
 
     .input-footer .actions {
         margin-left: 0;
+        flex-wrap: wrap;
     }
 
     .input-footer .actions a:before {
         line-height: 1.5 * $spacing-large;
         height: 1.5 * $spacing-large;
+        text-align: center;
+        margin-left: $spacing-small;
     }
-
+    
     .value.delete {
         background-color: $delete-bg;
         overflow: hidden;
+    }
+
+    .value.delete .input-footer .actions li:last-child {
+        display: none;
     }
 
     .value a.restore-value,
@@ -2855,6 +2864,14 @@ input[type="text"].value-language,
         padding: 0 $spacing-small;
         margin-right: $spacing-small;
         background-color: $gray-on-white;
+    }
+
+    .private:after {
+        @include fa-icon();
+        content: fa-content($fa-var-eye-slash);
+        font-family: "Font Awesome 5 Free";
+        display: inline-block;
+        margin-left: $spacing-small;
     }
 }
 
@@ -3874,7 +3891,6 @@ body.minimal {
         min-height: 0;
         margin: 0;
         padding: ((2 * $spacing-large) - 1px) calc(#{span(1 of 8)} - 1px);
-        border: 1px solid rgba(0,0,0,.15);
         overflow: hidden;
     }
 
@@ -3901,6 +3917,28 @@ body.minimal {
     .field:last-child {
         margin-bottom: 0;
     }
+
+    .site-list {
+        .site {
+            margin-bottom: $spacing-medium;
+        }
+
+        .site-link {
+            display: inline-block;
+            font-size: 1.25 * $base-font-size;
+            margin-bottom: $spacing-small;
+        }
+        
+        .site-summary {
+            margin: 0 0 0 $spacing-medium;
+            line-height: 20px;
+        }
+    }
+
+    .site-list-heading {
+        font-size: $base-font-size;
+        margin-top: -1.333 * $spacing-large;
+    }
 }
 
 .forgot-password {
@@ -3912,6 +3950,8 @@ body.minimal {
 /* @group ----- Assets ----- */
 
 .asset-form-element {
+    line-height: 1.5 * $spacing-large;
+
     &.empty {
         .asset-form-clear {
             display: none;
@@ -3931,6 +3971,10 @@ body.minimal {
 .selected-asset,
 .no-selected-asset {
     display: block;
+}
+
+.selected-asset-image {
+    max-width: 100%;
 }
 
 .asset-upload {
@@ -3958,6 +4002,10 @@ body.minimal {
             border-bottom: 1px solid $red;
         }
     }
+}
+
+.asset-filters {
+    margin-bottom: $spacing-small;
 }
 
 .asset-list .asset {

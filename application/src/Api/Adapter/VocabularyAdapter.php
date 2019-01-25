@@ -9,9 +9,6 @@ use Omeka\Stdlib\Message;
 
 class VocabularyAdapter extends AbstractEntityAdapter
 {
-    /**
-     * {@inheritDoc}
-     */
     protected $sortFields = [
         'id' => 'id',
         'namespace_uri' => 'namespaceUri',
@@ -23,40 +20,23 @@ class VocabularyAdapter extends AbstractEntityAdapter
     /**
      * @var array Reserved vocabulary prefixes
      */
-    protected $reservedPrefixes = [
-        // Omeka and module prefixes
-        '^o$', '^o-',
-        // Prefixes introduced in core code
-        '^time$', '^cnt$',
-    ];
+    protected $reservedPrefixes = ['^o$', '^o-'];
 
-    /**
-     * {@inheritDoc}
-     */
     public function getResourceName()
     {
         return 'vocabularies';
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getRepresentationClass()
     {
-        return 'Omeka\Api\Representation\VocabularyRepresentation';
+        return \Omeka\Api\Representation\VocabularyRepresentation::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getEntityClass()
     {
-        return 'Omeka\Entity\Vocabulary';
+        return \Omeka\Entity\Vocabulary::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function sortQuery(QueryBuilder $qb, array $query)
     {
         if (is_string($query['sort_by'])) {
@@ -70,9 +50,6 @@ class VocabularyAdapter extends AbstractEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function validateRequest(Request $request, ErrorStore $errorStore)
     {
         $data = $request->getContent();
@@ -89,9 +66,6 @@ class VocabularyAdapter extends AbstractEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function hydrate(Request $request, EntityInterface $entity,
         ErrorStore $errorStore
     ) {
@@ -173,12 +147,9 @@ class VocabularyAdapter extends AbstractEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function buildQuery(QueryBuilder $qb, array $query)
     {
-        if (isset($query['owner_id'])) {
+        if (isset($query['owner_id']) && is_numeric($query['owner_id'])) {
             $userAlias = $this->createAlias();
             $qb->innerJoin(
                 'Omeka\Entity\Vocabulary.owner',
@@ -203,9 +174,6 @@ class VocabularyAdapter extends AbstractEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function validateEntity(EntityInterface $entity, ErrorStore $errorStore)
     {
         // Validate namespace URI

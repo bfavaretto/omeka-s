@@ -144,8 +144,8 @@ abstract class AbstractEntityAdapter extends AbstractAdapter implements EntityAd
      * Set page, limit (max results) and offset (first result) conditions to the
      * query builder.
      *
-     * @param array $query
      * @param QueryBuilder $qb
+     * @param array $query
      */
     public function limitQuery(QueryBuilder $qb, array $query)
     {
@@ -167,9 +167,6 @@ abstract class AbstractEntityAdapter extends AbstractAdapter implements EntityAd
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function search(Request $request)
     {
         $query = $request->getContent();
@@ -257,9 +254,6 @@ abstract class AbstractEntityAdapter extends AbstractAdapter implements EntityAd
         return $response;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function create(Request $request)
     {
         $entityClass = $this->getEntityClass();
@@ -339,9 +333,6 @@ abstract class AbstractEntityAdapter extends AbstractAdapter implements EntityAd
         return new Response($entities);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function read(Request $request)
     {
         $entity = $this->findEntity($request->getId(), $request);
@@ -354,9 +345,6 @@ abstract class AbstractEntityAdapter extends AbstractAdapter implements EntityAd
         return new Response($entity);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function update(Request $request)
     {
         $entity = $this->findEntity($request->getId(), $request);
@@ -367,9 +355,6 @@ abstract class AbstractEntityAdapter extends AbstractAdapter implements EntityAd
         return new Response($entity);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function batchUpdate(Request $request)
     {
         $data = $this->preprocessBatchUpdate([], $request);
@@ -420,9 +405,6 @@ abstract class AbstractEntityAdapter extends AbstractAdapter implements EntityAd
         return new Response($entities);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function delete(Request $request)
     {
         $entity = $this->deleteEntity($request);
@@ -432,9 +414,6 @@ abstract class AbstractEntityAdapter extends AbstractAdapter implements EntityAd
         return new Response($entity);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function batchDelete(Request $request)
     {
         $apiManager = $this->getServiceLocator()->get('Omeka\ApiManager');
@@ -785,7 +764,6 @@ abstract class AbstractEntityAdapter extends AbstractAdapter implements EntityAd
     public function hydrateResourceClass(Request $request, EntityInterface $entity)
     {
         $data = $request->getContent();
-        $resourceClass = $entity->getResourceClass();
         if ($this->shouldHydrate($request, 'o:resource_class')) {
             if (isset($data['o:resource_class']['o:id'])
                 && is_numeric($data['o:resource_class']['o:id'])
@@ -795,8 +773,8 @@ abstract class AbstractEntityAdapter extends AbstractAdapter implements EntityAd
             } else {
                 $resourceClass = null;
             }
+            $entity->setResourceClass($resourceClass);
         }
-        $entity->setResourceClass($resourceClass);
     }
 
     /**
@@ -810,7 +788,6 @@ abstract class AbstractEntityAdapter extends AbstractAdapter implements EntityAd
     public function hydrateResourceTemplate(Request $request, EntityInterface $entity)
     {
         $data = $request->getContent();
-        $resourceTemplate = $entity->getResourceTemplate();
         if ($this->shouldHydrate($request, 'o:resource_template')) {
             if (isset($data['o:resource_template']['o:id'])
                 && is_numeric($data['o:resource_template']['o:id'])
@@ -820,8 +797,32 @@ abstract class AbstractEntityAdapter extends AbstractAdapter implements EntityAd
             } else {
                 $resourceTemplate = null;
             }
+            $entity->setResourceTemplate($resourceTemplate);
         }
-        $entity->setResourceTemplate($resourceTemplate);
+    }
+
+    /**
+     * Hydrate the entity's thumbanail.
+     *
+     * Assumes the thumbnail can be set to NULL.
+     *
+     * @param Request $request
+     * @param EntityInterface $entity
+     */
+    public function hydrateThumbnail(Request $request, EntityInterface $entity)
+    {
+        $data = $request->getContent();
+        if ($this->shouldHydrate($request, 'o:thumbnail')) {
+            if (isset($data['o:thumbnail']['o:id'])
+                && is_numeric($data['o:thumbnail']['o:id'])
+            ) {
+                $asset = $this->getAdapter('assets')
+                    ->findEntity($data['o:thumbnail']['o:id']);
+            } else {
+                $asset = null;
+            }
+            $entity->setThumbnail($asset);
+        }
     }
 
     /**

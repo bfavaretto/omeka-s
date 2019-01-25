@@ -3,17 +3,11 @@ namespace Omeka\Api\Representation;
 
 class UserRepresentation extends AbstractEntityRepresentation
 {
-    /**
-     * {@inheritDoc}
-     */
     public function getControllerName()
     {
         return 'user';
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getJsonLdType()
     {
         return 'o:User';
@@ -44,6 +38,11 @@ class UserRepresentation extends AbstractEntityRepresentation
     public function role()
     {
         return $this->resource->getRole();
+    }
+
+    public function isActive()
+    {
+        return $this->resource->isActive();
     }
 
     public function created()

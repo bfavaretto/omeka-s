@@ -22,7 +22,7 @@ class HtmlElement extends AbstractHtmlElement
      * HTML element helper
      *
      * @param string $element The current element
-     * @return HtmlElement
+     * @return self
      */
     public function __invoke($element)
     {
@@ -60,8 +60,8 @@ class HtmlElement extends AbstractHtmlElement
     /**
      * Append an attribute to an element
      *
-     * @param  strink $key
-     * @param  string $value
+     * @param string $key
+     * @param string $value
      * @return self
      */
     public function appendAttribute($key, $value)

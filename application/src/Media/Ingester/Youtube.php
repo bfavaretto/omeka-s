@@ -87,19 +87,12 @@ class Youtube implements IngesterInterface
         $media->setData($mediaData);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function form(PhpRenderer $view, array $options = [])
     {
         $urlInput = new UrlElement('o:media[__index__][o:source]');
         $urlInput->setOptions([
             'label' => 'Video URL', // @translate
             'info' => 'URL for the video to embed.', // @translate
-        ]);
-        $urlInput->setAttributes([
-            'id' => 'media-youtube-source-__index__',
-            'required' => true,
         ]);
         $urlInput->setAttributes([
             'id' => 'media-youtube-source-__index__',

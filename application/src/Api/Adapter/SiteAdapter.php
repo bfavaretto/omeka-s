@@ -15,33 +15,30 @@ class SiteAdapter extends AbstractEntityAdapter
 {
     use SiteSlugTrait;
 
-    /**
-     * {@inheritDoc}
-     */
+    protected $sortFields = [
+        'id' => 'id',
+        'is_public' => 'isPublic',
+        'created' => 'created',
+        'modified' => 'modified',
+        'title' => 'title',
+        'slug' => 'slug',
+    ];
+
     public function getResourceName()
     {
         return 'sites';
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getRepresentationClass()
     {
-        return 'Omeka\Api\Representation\SiteRepresentation';
+        return \Omeka\Api\Representation\SiteRepresentation::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getEntityClass()
     {
-        return 'Omeka\Entity\Site';
+        return \Omeka\Entity\Site::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function hydrate(Request $request, EntityInterface $entity,
         ErrorStore $errorStore
     ) {
@@ -65,6 +62,13 @@ class SiteAdapter extends AbstractEntityAdapter
         if ($this->shouldHydrate($request, 'o:title')) {
             $title = trim($request->getValue('o:title', ''));
             $entity->setTitle($title);
+        }
+        if ($this->shouldHydrate($request, 'o:summary')) {
+            $summary = trim($request->getValue('o:summary', ''));
+            if (!$summary) {
+                $summary = null;
+            }
+            $entity->setSummary($summary);
         }
         if ($this->shouldHydrate($request, 'o:slug')) {
             $default = null;
@@ -210,9 +214,6 @@ class SiteAdapter extends AbstractEntityAdapter
         $this->updateTimestamps($request, $entity);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function validateEntity(EntityInterface $entity, ErrorStore $errorStore)
     {
         $title = $entity->getTitle();
@@ -245,7 +246,7 @@ class SiteAdapter extends AbstractEntityAdapter
 
     public function buildQuery(QueryBuilder $qb, array $query)
     {
-        if (isset($query['owner_id'])) {
+        if (isset($query['owner_id']) && is_numeric($query['owner_id'])) {
             $userAlias = $this->createAlias();
             $qb->innerJoin(
                 'Omeka\Entity\Site.owner',
@@ -255,6 +256,13 @@ class SiteAdapter extends AbstractEntityAdapter
                 "$userAlias.id",
                 $this->createNamedParameter($qb, $query['owner_id']))
             );
+        }
+
+        if (isset($query['slug'])) {
+            $qb->andWhere($qb->expr()->eq(
+                'Omeka\Entity\Site.slug',
+                $this->createNamedParameter($qb, $query['slug'])
+            ));
         }
     }
 

@@ -3,7 +3,6 @@ namespace Omeka\Api\Adapter;
 
 use Doctrine\Common\Collections\Criteria;
 use Omeka\Api\Request;
-use Omeka\Entity\Property;
 use Omeka\Entity\Resource;
 use Omeka\Entity\Value;
 use Zend\ServiceManager\Exception\ServiceNotFoundException;
@@ -101,6 +100,9 @@ class ValueHydrator
                     'Omeka\Entity\Property',
                     $valueData['property_id']
                 ));
+                if (isset($valueData['is_public'])) {
+                    $value->setIsPublic($valueData['is_public']);
+                }
                 $dataType->hydrate($valueData, $value, $adapter);
             }
         }

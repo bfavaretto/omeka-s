@@ -3,9 +3,6 @@ namespace Omeka\Api\Representation;
 
 class SitePageRepresentation extends AbstractEntityRepresentation
 {
-    /**
-     * {@inheritDoc}
-     */
     public function getJsonLdType()
     {
         return 'o:SitePage';
@@ -34,9 +31,6 @@ class SitePageRepresentation extends AbstractEntityRepresentation
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function adminUrl($action = null, $canonical = false)
     {
         $url = $this->getViewHelper('Url');
@@ -51,11 +45,17 @@ class SitePageRepresentation extends AbstractEntityRepresentation
         );
     }
 
+    /**
+     * @return string
+     */
     public function slug()
     {
         return $this->resource->getSlug();
     }
 
+    /**
+     * @return string
+     */
     public function title()
     {
         return $this->resource->getTitle();
@@ -76,6 +76,9 @@ class SitePageRepresentation extends AbstractEntityRepresentation
         return $blocks;
     }
 
+    /**
+     * @return SiteRepresentation
+     */
     public function site()
     {
         return $this->getAdapter('sites')

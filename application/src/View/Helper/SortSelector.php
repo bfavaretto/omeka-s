@@ -16,7 +16,7 @@ class SortSelector extends AbstractHelper
     /**
      * Render sorting form.
      *
-     * @param array $sortBy
+     * @param array $sortBy Array of sorting options, each a sub-array with keys "label" and "value"
      * @param string|null $partialName Name of view script, or a view model
      * @return string
      */
@@ -24,19 +24,18 @@ class SortSelector extends AbstractHelper
     {
         $partialName = $partialName ?: self::PARTIAL_NAME;
 
-        $translate = $this->getView()->plugin('translate');
-
-        $params = $this->getView()->params();
+        $view = $this->getView();
+        $params = $view->params();
         $sortByQuery = $params->fromQuery('sort_by');
         $sortOrderQuery = $params->fromQuery('sort_order');
 
-        return $this->getView()->partial(
-            $partialName,
-            [
-                'sortBy' => $sortBy,
-                'sortByQuery' => $sortByQuery,
-                'sortOrderQuery' => $sortOrderQuery,
-            ]
-        );
+        $args = [
+            'sortBy' => $sortBy,
+            'sortByQuery' => $sortByQuery,
+            'sortOrderQuery' => $sortOrderQuery,
+        ];
+        $args = $view->trigger('view.sort-selector', $args, true);
+
+        return $view->partial($partialName, $args);
     }
 }

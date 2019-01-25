@@ -9,49 +9,30 @@ use Omeka\Stdlib\ErrorStore;
 
 class ItemSetAdapter extends AbstractResourceEntityAdapter
 {
-    /**
-     * {@inheritDoc}
-     */
     protected $sortFields = [
         'id' => 'id',
         'created' => 'created',
         'modified' => 'modified',
     ];
 
-    /**
-     * {@inheritDoc}
-     */
     public function getResourceName()
     {
         return 'item_sets';
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getRepresentationClass()
     {
-        return 'Omeka\Api\Representation\ItemSetRepresentation';
+        return \Omeka\Api\Representation\ItemSetRepresentation::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getEntityClass()
     {
-        return 'Omeka\Entity\ItemSet';
+        return \Omeka\Entity\ItemSet::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function buildQuery(QueryBuilder $qb, array $query)
     {
         parent::buildQuery($qb, $query);
-
-        if (isset($query['id'])) {
-            $qb->andWhere($qb->expr()->eq('Omeka\Entity\ItemSet.id', $query['id']));
-        }
 
         // Select item sets to which the current user can assign an item.
         if (isset($query['is_open'])) {
@@ -76,8 +57,11 @@ class ItemSetAdapter extends AbstractResourceEntityAdapter
             }
         }
 
-        if (!empty($query['site_id'])) {
+        if (isset($query['site_id']) && is_numeric($query['site_id'])) {
             $siteAdapter = $this->getAdapter('sites');
+            // Though $site isn't used here, this is intended to ensure that the
+            // user cannot perform a query against a private site he doesn't
+            // have access to.
             try {
                 $site = $siteAdapter->findEntity($query['site_id']);
             } catch (Exception\NotFoundException $e) {
@@ -96,9 +80,6 @@ class ItemSetAdapter extends AbstractResourceEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function sortQuery(QueryBuilder $qb, array $query)
     {
         if (is_string($query['sort_by'])) {
@@ -110,9 +91,6 @@ class ItemSetAdapter extends AbstractResourceEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function hydrate(Request $request, EntityInterface $entity,
         ErrorStore $errorStore
     ) {
@@ -123,9 +101,6 @@ class ItemSetAdapter extends AbstractResourceEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function preprocessBatchUpdate(array $data, Request $request)
     {
         $rawData = $request->getContent();

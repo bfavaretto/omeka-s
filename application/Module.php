@@ -13,7 +13,7 @@ class Module extends AbstractModule
     /**
      * This Omeka version.
      */
-    const VERSION = '1.2.0';
+    const VERSION = '1.3.0';
 
     /**
      * The vocabulary IRI used to define Omeka application data.
@@ -25,9 +25,6 @@ class Module extends AbstractModule
      */
     const OMEKA_VOCABULARY_TERM = 'o';
 
-    /**
-     * {@inheritDoc}
-     */
     public function getConfig()
     {
         return array_merge(
@@ -37,9 +34,6 @@ class Module extends AbstractModule
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function attachListeners(SharedEventManagerInterface $sharedEventManager)
     {
         $sharedEventManager->attach(
@@ -120,34 +114,29 @@ class Module extends AbstractModule
                 $resource,
                 'view.show.after',
                 function (ZendEvent $event) {
-                    $resource = $event->getTarget()->resource;
-                    echo $resource->embeddedJsonLd();
+                    $view = $event->getTarget();
+                    if (($view->status()->isAdminRequest() && !$view->setting('disable_jsonld_embed'))
+                        || ($view->status()->isSiteRequest() && !$view->siteSetting('disable_jsonld_embed'))
+                    ) {
+                        echo $view->resource->embeddedJsonLd();
+                    }
                 }
             );
             $sharedEventManager->attach(
                 $resource,
                 'view.browse.after',
                 function (ZendEvent $event) {
-                    $resources = $event->getTarget()->resources;
-                    foreach ($resources as $resource) {
-                        echo $resource->embeddedJsonLd();
+                    $view = $event->getTarget();
+                    if (($view->status()->isAdminRequest() && !$view->setting('disable_jsonld_embed'))
+                        || ($view->status()->isSiteRequest() && !$view->siteSetting('disable_jsonld_embed'))
+                    ) {
+                        foreach ($view->resources as $resource) {
+                            echo $resource->embeddedJsonLd();
+                        }
                     }
                 }
             );
         }
-
-        $sharedEventManager->attach(
-            '*',
-            'view.advanced_search',
-            function (ZendEvent $event) {
-                if ('item' === $event->getParam('resourceType')) {
-                    $partials = $event->getParam('partials');
-                    $partials[] = 'common/advanced-search/item-sets';
-                    $event->setParam('partials', $partials);
-                }
-            },
-            2
-        );
     }
 
     /**
@@ -171,8 +160,8 @@ class Module extends AbstractModule
                 'vocabulary_label' => $row['label'],
             ];
         }
-        $context['cnt'] = 'http://www.w3.org/2011/content#';
-        $context['time'] = 'http://www.w3.org/2006/time#';
+        $context['o-cnt'] = 'http://www.w3.org/2011/content#';
+        $context['o-time'] = 'http://www.w3.org/2006/time#';
         $event->setParam('context', $context);
     }
 
@@ -241,9 +230,9 @@ class Module extends AbstractModule
         }
         $data = $event->getTarget()->mediaData();
         $jsonLd = $event->getParam('jsonLd');
-        $jsonLd['@type'] = 'cnt:ContentAsText';
-        $jsonLd['cnt:chars'] = $data['html'];
-        $jsonLd['cnt:characterEncoding'] = 'UTF-8';
+        $jsonLd['@type'] = 'o-cnt:ContentAsText';
+        $jsonLd['o-cnt:chars'] = $data['html'];
+        $jsonLd['o-cnt:characterEncoding'] = 'UTF-8';
         $event->setParam('jsonLd', $jsonLd);
     }
 
@@ -261,15 +250,15 @@ class Module extends AbstractModule
         $jsonLd = $event->getParam('jsonLd');
         if (isset($data['start']) || isset($data['end'])) {
             if (isset($data['start'])) {
-                $jsonLd['time:hasBeginning'] = [
+                $jsonLd['o-time:hasBeginning'] = [
                     '@value' => $data['start'],
-                    '@type' => 'time:seconds',
+                    '@type' => 'o-time:seconds',
                 ];
             }
             if (isset($data['end'])) {
-                $jsonLd['time:hasEnd'] = [
+                $jsonLd['o-time:hasEnd'] = [
                     '@value' => $data['end'],
-                    '@type' => 'time:seconds',
+                    '@type' => 'o-time:seconds',
                 ];
             }
         }
@@ -350,5 +339,97 @@ class Module extends AbstractModule
             );
         }
         $qb->andWhere($expression);
+    }
+
+    public function batchUpdatePostUser(ZendEvent $event)
+    {
+        $response = $event->getParam('response');
+        $data = $response->getRequest()->getContent();
+        if (!empty($data['remove_from_site_permission'])) {
+            $siteIds = $data['remove_from_site_permission'];
+            $collectionAction = 'remove';
+            $role = null;
+        } elseif (!empty($data['add_to_site_permission'])) {
+            $siteIds = $data['add_to_site_permission'];
+            $collectionAction = 'append';
+            $role = empty($data['add_to_site_permission_role'])
+                ? 'viewer'
+                : $data['add_to_site_permission_role'];
+        } else {
+            return;
+        }
+
+        $api = $this->getServiceLocator()->get('Omeka\ApiManager');
+        if (in_array(-1, $siteIds)) {
+            $siteIds = $api->search('sites', [], ['responseContent' => 'resource'])->getContent();
+        }
+        if (empty($siteIds)) {
+            return;
+        }
+
+        // The site adapter doesn't manage partial remove/append of users,
+        // (collectionAction), so fetch all users first for each site directly.
+        // Nevertheless, use the standard api next in order to trigger api
+        // events of Site.
+        // TODO Replace $fileData by $relatedData in ApiManager, so any related
+        // entity will be able to be updated with the main entity.
+        $userIds = array_intersect_key($response->getRequest()->getIds(), $response->getContent());
+        foreach ($siteIds as $siteId) {
+            $site = is_object($siteId)
+                ? $siteId
+                : $api->read('sites', $siteId, [], ['responseContent' => 'resource'])->getContent();
+            $sitePermissions = $site->getSitePermissions();
+            $newSitePermissions = [];
+            switch ($collectionAction) {
+                case 'remove':
+                    if (empty($sitePermissions)) {
+                        continue 2;
+                    }
+                    foreach ($sitePermissions as $sitePermission) {
+                        $siteUserId = $sitePermission->getUser()->getId();
+                        if (in_array($siteUserId, $userIds)) {
+                            continue;
+                        }
+                        $newSitePermissions[] = [
+                            'o:user' => ['o:id' => $siteUserId],
+                            'o:role' => $sitePermission->getRole(),
+                        ];
+                    }
+                    if (count($sitePermissions) == count($newSitePermissions)) {
+                        continue 2;
+                    }
+                    break;
+                case 'append':
+                    foreach ($sitePermissions as $sitePermission) {
+                        $siteUserId = $sitePermission->getUser()->getId();
+                        $newSitePermissions[$siteUserId] = [
+                            'o:user' => ['o:id' => $siteUserId],
+                            'o:role' => $sitePermission->getRole(),
+                        ];
+                    }
+                    foreach ($userIds as $userId) {
+                        $newSitePermissions[$userId] = [
+                            'o:user' => ['o:id' => $userId],
+                            'o:role' => $role,
+                        ];
+                    }
+                    break;
+            }
+            $api->update('sites',
+                $site->getId(),
+                ['o:site_permission' => $newSitePermissions],
+                [],
+                [
+                    'isPartial' => true,
+                    'collectionAction' => 'replace',
+                    'flushEntityManager' => false,
+                    'responseContent' => 'resource',
+                    'finalize' => true,
+                ]
+            );
+        }
+
+        $entityManager = $this->getServiceLocator()->get('Omeka\EntityManager');
+        $entityManager->flush();
     }
 }

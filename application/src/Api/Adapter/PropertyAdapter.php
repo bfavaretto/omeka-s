@@ -10,9 +10,6 @@ use Omeka\Stdlib\Message;
 
 class PropertyAdapter extends AbstractEntityAdapter
 {
-    /**
-     * {@inheritDoc}
-     */
     protected $sortFields = [
         'id' => 'id',
         'local_name' => 'localName',
@@ -20,33 +17,21 @@ class PropertyAdapter extends AbstractEntityAdapter
         'comment' => 'comment',
     ];
 
-    /**
-     * {@inheritDoc}
-     */
     public function getResourceName()
     {
         return 'properties';
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getRepresentationClass()
     {
-        return 'Omeka\Api\Representation\PropertyRepresentation';
+        return \Omeka\Api\Representation\PropertyRepresentation::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getEntityClass()
     {
-        return 'Omeka\Entity\Property';
+        return \Omeka\Entity\Property::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function sortQuery(QueryBuilder $qb, array $query)
     {
         if (is_string($query['sort_by'])) {
@@ -68,9 +53,6 @@ class PropertyAdapter extends AbstractEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function hydrate(Request $request, EntityInterface $entity,
         ErrorStore $errorStore
     ) {
@@ -88,12 +70,9 @@ class PropertyAdapter extends AbstractEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function buildQuery(QueryBuilder $qb, array $query)
     {
-        if (isset($query['owner_id'])) {
+        if (isset($query['owner_id']) && is_numeric($query['owner_id'])) {
             $userAlias = $this->createAlias();
             $qb->innerJoin(
                 'Omeka\Entity\Property.owner',
@@ -104,7 +83,7 @@ class PropertyAdapter extends AbstractEntityAdapter
                 $this->createNamedParameter($qb, $query['owner_id']))
             );
         }
-        if (isset($query['vocabulary_id'])) {
+        if (isset($query['vocabulary_id']) && is_numeric($query['vocabulary_id'])) {
             $vocabularyAlias = $this->createAlias();
             $qb->innerJoin(
                 'Omeka\Entity\Property.vocabulary',
@@ -162,9 +141,6 @@ class PropertyAdapter extends AbstractEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function validateEntity(EntityInterface $entity, ErrorStore $errorStore)
     {
         // Validate local name

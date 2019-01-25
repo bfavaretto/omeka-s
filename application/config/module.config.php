@@ -28,7 +28,7 @@ return [
         'use_externals' => true,
         'externals' => [
             'Omeka' => [
-                'vendor/jquery/jquery.min.js' => '//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js',
+                'vendor/jquery/jquery.min.js' => '//ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js',
             ],
         ],
     ],
@@ -56,6 +56,7 @@ return [
         ],
         'filters' => [
             'resource_visibility' => Db\Filter\ResourceVisibilityFilter::class,
+            'value_visibility' => Db\Filter\ValueVisibilityFilter::class,
         ],
         'functions' => [
              'datetime' => [
@@ -302,6 +303,7 @@ return [
             'Omeka\Controller\Admin\Asset' => Controller\Admin\AssetController::class,
             'Omeka\Controller\Admin\Index' => Controller\Admin\IndexController::class,
             'Omeka\Controller\Admin\ItemSet' => Controller\Admin\ItemSetController::class,
+            'Omeka\Controller\Admin\Job' => Controller\Admin\JobController::class,
             'Omeka\Controller\Admin\Media' => Controller\Admin\MediaController::class,
             'Omeka\Controller\Admin\Property' => Controller\Admin\PropertyController::class,
             'Omeka\Controller\Admin\ResourceClass' => Controller\Admin\ResourceClassController::class,
@@ -315,7 +317,6 @@ return [
             'Omeka\Controller\Migrate' => Service\Controller\MigrateControllerFactory::class,
             'Omeka\Controller\Admin\Module' => Service\Controller\Admin\ModuleControllerFactory::class,
             'Omeka\Controller\Admin\User' => Service\Controller\Admin\UserControllerFactory::class,
-            'Omeka\Controller\Admin\Job' => Service\Controller\Admin\JobControllerFactory::class,
             'Omeka\Controller\Admin\ResourceTemplate' => Service\Controller\Admin\ResourceTemplateControllerFactory::class,
             'Omeka\Controller\Admin\SystemInfo' => Service\Controller\Admin\SystemInfoControllerFactory::class,
             'Omeka\Controller\Admin\Vocabulary' => Service\Controller\Admin\VocabularyControllerFactory::class,
@@ -393,6 +394,7 @@ return [
             'formColorPicker' => Form\View\Helper\FormColorPicker::class,
             'thumbnail' => View\Helper\Thumbnail::class,
             'userBar' => View\Helper\UserBar::class,
+            'cancelButton' => View\Helper\CancelButton::class,
         ],
         'factories' => [
             'api' => Service\ViewHelper\ApiFactory::class,
@@ -413,12 +415,17 @@ return [
             'userIsAllowed' => Service\ViewHelper\UserIsAllowedFactory::class,
             'deleteConfirm' => Service\ViewHelper\DeleteConfirmFactory::class,
             'resourceClassSelect' => Service\ViewHelper\ResourceClassSelectFactory::class,
+            'resourceTemplateSelect' => Service\ViewHelper\ResourceTemplateSelectFactory::class,
             'propertySelect' => Service\ViewHelper\PropertySelectFactory::class,
             'itemSetSelect' => Service\ViewHelper\ItemSetSelectFactory::class,
+            'roleSelect' => Service\ViewHelper\RoleSelectFactory::class,
+            'userSelect' => Service\ViewHelper\UserSelectFactory::class,
+            'searchUserFilters' => Service\ViewHelper\SearchUserFiltersFactory::class,
             'siteSelect' => Service\ViewHelper\SiteSelectFactory::class,
             'resourceSelect' => Service\ViewHelper\ResourceSelectFactory::class,
             'jsTranslate' => Service\ViewHelper\JsTranslateFactory::class,
             'lang' => Service\ViewHelper\LangFactory::class,
+            'status' => Service\ViewHelper\StatusFactory::class,
         ],
         'delegators' => [
             'Zend\Form\View\Helper\FormElement' => [
@@ -434,13 +441,13 @@ return [
                 Service\Delegator\NavigationDelegatorFactory::class,
             ],
             'Zend\View\Helper\HeadTitle' => [
-                'Omeka\Service\Delegator\HeadTitleDelegatorFactory',
+                Service\Delegator\HeadTitleDelegatorFactory::class,
             ],
         ],
     ],
     'form_elements' => [
         'initializers' => [
-            'Omeka\Form\Initializer\Csrf',
+            Form\Initializer\Csrf::class,
         ],
         'factories' => [
             'Omeka\Form\ResourceForm' => Service\Form\ResourceFormFactory::class,
@@ -450,12 +457,16 @@ return [
             'Omeka\Form\ModuleStateChangeForm' => Service\Form\ModuleStateChangeFormFactory::class,
             'Omeka\Form\SiteForm' => Service\Form\SiteFormFactory::class,
             'Omeka\Form\SiteSettingsForm' => Service\Form\SiteSettingsFormFactory::class,
+            'Omeka\Form\UserBatchUpdateForm' => Service\Form\UserBatchUpdateFormFactory::class,
             'Omeka\Form\Element\ResourceSelect' => Service\Form\Element\ResourceSelectFactory::class,
             'Omeka\Form\Element\ResourceClassSelect' => Service\Form\Element\ResourceClassSelectFactory::class,
+            'Omeka\Form\Element\ResourceTemplateSelect' => Service\Form\Element\ResourceTemplateSelectFactory::class,
             'Omeka\Form\Element\PropertySelect' => Service\Form\Element\PropertySelectFactory::class,
             'Omeka\Form\Element\ItemSetSelect' => Service\Form\Element\ItemSetSelectFactory::class,
             'Omeka\Form\Element\SiteSelect' => Service\Form\Element\SiteSelectFactory::class,
             'Omeka\Form\Element\LocaleSelect' => Service\Form\Element\LocaleSelectFactory::class,
+            'Omeka\Form\Element\RoleSelect' => Service\Form\Element\RoleSelectFactory::class,
+            'Omeka\Form\Element\UserSelect' => Service\Form\Element\UserSelectFactory::class,
             'Omeka\Form\Element\Recaptcha' => Service\Form\Element\RecaptchaFactory::class,
             'Omeka\Form\Element\HtmlTextarea' => Service\Form\Element\HtmlTextareaFactory::class,
             'Omeka\Form\Element\Ckeditor' => Service\Form\Element\CkeditorFactory::class,
@@ -473,17 +484,18 @@ return [
         ],
     ],
     'block_layouts' => [
-        'factories' => [
-            'html' => Service\BlockLayout\HtmlFactory::class,
-        ],
         'invokables' => [
             'pageTitle' => Site\BlockLayout\PageTitle::class,
             'media' => Site\BlockLayout\Media::class,
             'browsePreview' => Site\BlockLayout\BrowsePreview::class,
             'itemShowCase' => Site\BlockLayout\ItemShowcase::class,
+            'listOfSites' => Site\BlockLayout\ListOfSites::class,
             'tableOfContents' => Site\BlockLayout\TableOfContents::class,
             'lineBreak' => Site\BlockLayout\LineBreak::class,
             'itemWithMetadata' => Site\BlockLayout\ItemWithMetadata::class,
+        ],
+        'factories' => [
+            'html' => Service\BlockLayout\HtmlFactory::class,
         ],
         'sorted_names' => [
             'html',

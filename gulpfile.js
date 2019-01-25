@@ -107,14 +107,12 @@ function composer(args) {
 }
 
 function cssToSass(dir) {
-    return gulp.src(dir + '/asset/sass/*.scss')
+    return gulp.src(dir + '/asset/sass/**/*.scss')
         .pipe(sass({
             outputStyle: 'compressed',
             includePaths: ['node_modules/susy/sass']
         }).on('error', sass.logError))
-        .pipe(postcss([
-            autoprefixer({browsers: ['> 5%', '> 1% in US']})
-        ]))
+        .pipe(postcss([autoprefixer()]))
         .pipe(gulp.dest(dir + '/asset/css'));
 }
 
@@ -175,7 +173,7 @@ gulp.task('css', function () {
 });
 
 gulp.task('css:watch', function () {
-    gulp.watch('./application/asset/sass/*.scss', gulp.parallel('css'));
+    gulp.watch('./application/asset/sass/**/*.scss', gulp.parallel('css'));
 });
 
 gulp.task('css:module', function () {
@@ -188,7 +186,7 @@ gulp.task('css:module', function () {
 gulp.task('css:watch:module', function () {
     var modulePathPromise = getModulePath(cliOptions.module);
     modulePathPromise.then(function(modulePath) {
-        gulp.watch(modulePath + '/asset/sass/*.scss', gulp.parallel('css:module'));
+        gulp.watch(modulePath + '/asset/sass/**/*.scss', gulp.parallel('css:module'));
     });
 });
 
@@ -317,7 +315,7 @@ gulp.task('i18n:module:template', function () {
     });
     var dupesPromise = preDedupePromise.then(function (preDedupePot) {
         return tmpFile({postfix: 'module-dupes.pot'}).spread(function (path, fd) {
-            return runCommand('msgcomm', ['--omit-header', '-o', path, preDedupePot, pot], {}, path);
+            return runCommand('msgcomm', ['-o', path, preDedupePot, pot], {}, path);
         });
     });
     var languageDirPromise = modulePathPromise.then(function (modulePath) {

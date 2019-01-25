@@ -50,9 +50,6 @@ abstract class AbstractResourceEntityRepresentation extends AbstractEntityRepres
         parent::__construct($resource, $adapter);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getJsonLdType()
     {
         $type = $this->getResourceJsonLdType();
@@ -66,9 +63,6 @@ abstract class AbstractResourceEntityRepresentation extends AbstractEntityRepres
         return $type;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getJsonLd()
     {
         // Set the date time value objects.
@@ -106,6 +100,10 @@ abstract class AbstractResourceEntityRepresentation extends AbstractEntityRepres
         if ($this->resourceTemplate()) {
             $resourceTemplate = $this->resourceTemplate()->getReference();
         }
+        $thumbnail = null;
+        if ($this->thumbnail()) {
+            $thumbnail = $this->thumbnail()->getReference();
+        }
 
         return array_merge(
             [
@@ -113,6 +111,7 @@ abstract class AbstractResourceEntityRepresentation extends AbstractEntityRepres
                 'o:owner' => $owner,
                 'o:resource_class' => $resourceClass,
                 'o:resource_template' => $resourceTemplate,
+                'o:thumbnail' => $thumbnail,
             ],
             $dateTime,
             $this->getResourceJsonLd(),
@@ -150,6 +149,17 @@ abstract class AbstractResourceEntityRepresentation extends AbstractEntityRepres
     {
         return $this->getAdapter('resource_templates')
             ->getRepresentation($this->resource->getResourceTemplate());
+    }
+
+    /**
+     * Get the thumbnail of this resource.
+     *
+     * @return Asset
+     */
+    public function thumbnail()
+    {
+        return $this->getAdapter('assets')
+            ->getRepresentation($this->resource->getThumbnail());
     }
 
     /**
@@ -243,7 +253,7 @@ abstract class AbstractResourceEntityRepresentation extends AbstractEntityRepres
             $value = new ValueRepresentation($valueEntity, $this->getServiceLocator());
             if ('resource' === $value->type() && null === $value->valueResource()) {
                 // Skip this resource value if the resource is not available
-                // (most likely becuase it is private).
+                // (most likely because it is private).
                 continue;
             }
             $term = $value->property()->term();
@@ -283,7 +293,7 @@ abstract class AbstractResourceEntityRepresentation extends AbstractEntityRepres
      *   by default.
      * - lang: (null) Get values of this language only. Returns values of all
      *   languages by default.
-     * @return RepresentationInterface|mixed
+     * @return ValueRepresentation|ValueRepresentation[]|mixed
      */
     public function value($term, array $options = [])
     {
@@ -401,7 +411,6 @@ abstract class AbstractResourceEntityRepresentation extends AbstractEntityRepres
      *
      * Options:
      *
-     * + hideVocabulary: Whether to hide vocabulary labels. Default: false
      * + viewName: Name of view script, or a view model. Default
      *   "common/resource-values"
      *
@@ -410,9 +419,6 @@ abstract class AbstractResourceEntityRepresentation extends AbstractEntityRepres
      */
     public function displayValues(array $options = [])
     {
-        if (!isset($options['hideVocabulary'])) {
-            $options['hideVocabulary'] = false;
-        }
         if (!isset($options['viewName'])) {
             $options['viewName'] = 'common/resource-values';
         }

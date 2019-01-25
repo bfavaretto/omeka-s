@@ -24,14 +24,12 @@ class SiteBlockAttachmentRepresentation extends AbstractRepresentation
         $this->attachment = $attachment;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function jsonSerialize()
     {
+        $item = $this->item();
         $media = $this->media();
         return [
-            'o:item' => $this->item()->getReference(),
+            'o:item' => $item ? $item->getReference() : null,
             'o:media' => $media ? $media->getReference() : null,
             'o:caption' => $this->caption(),
         ];

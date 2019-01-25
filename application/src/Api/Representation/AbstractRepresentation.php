@@ -87,9 +87,19 @@ abstract class AbstractRepresentation implements RepresentationInterface
     /**
      * Get one Media representation that typifies this representation.
      *
-     * @return null|MediaRepresentation
+     * @return MediaRepresentation|null
      */
     public function primaryMedia()
+    {
+        return null;
+    }
+
+    /**
+     * Get one thumbnail of this representation.
+     *
+     * @return Asset
+     */
+    public function thumbnail()
     {
         return null;
     }

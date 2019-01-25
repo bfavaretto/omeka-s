@@ -10,40 +10,25 @@ use Omeka\Stdlib\Message;
 
 class ResourceTemplateAdapter extends AbstractEntityAdapter
 {
-    /**
-     * {@inheritDoc}
-     */
     protected $sortFields = [
         'label' => 'label',
     ];
 
-    /**
-     * {@inheritDoc}
-     */
     public function getResourceName()
     {
         return 'resource_templates';
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getRepresentationClass()
     {
-        return 'Omeka\Api\Representation\ResourceTemplateRepresentation';
+        return \Omeka\Api\Representation\ResourceTemplateRepresentation::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getEntityClass()
     {
-        return 'Omeka\Entity\ResourceTemplate';
+        return \Omeka\Entity\ResourceTemplate::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function sortQuery(QueryBuilder $qb, array $query)
     {
         if (is_string($query['sort_by'])) {
@@ -71,9 +56,6 @@ class ResourceTemplateAdapter extends AbstractEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function validateRequest(Request $request, ErrorStore $errorStore)
     {
         $data = $request->getContent();
@@ -99,9 +81,6 @@ class ResourceTemplateAdapter extends AbstractEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function validateEntity(EntityInterface $entity,
         ErrorStore $errorStore
     ) {
@@ -114,9 +93,6 @@ class ResourceTemplateAdapter extends AbstractEntityAdapter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function hydrate(Request $request, EntityInterface $entity,
         ErrorStore $errorStore
     ) {
@@ -175,6 +151,10 @@ class ResourceTemplateAdapter extends AbstractEntityAdapter
                 if (isset($resTemPropData['o:is_required'])) {
                     $isRequired = (bool) $resTemPropData['o:is_required'];
                 }
+                $isPrivate = false;
+                if (isset($resTemPropData['o:is_private'])) {
+                    $isPrivate = (bool) $resTemPropData['o:is_private'];
+                }
 
                 // Check whether a passed property is already assigned to this
                 // resource template.
@@ -193,6 +173,7 @@ class ResourceTemplateAdapter extends AbstractEntityAdapter
                 $resTemProp->setAlternateComment($altComment);
                 $resTemProp->setDataType($dataType);
                 $resTemProp->setIsRequired($isRequired);
+                $resTemProp->setIsPrivate($isPrivate);
                 // Set the position of the property to its intrinsic order
                 // within the passed array.
                 $resTemProp->setPosition($position++);

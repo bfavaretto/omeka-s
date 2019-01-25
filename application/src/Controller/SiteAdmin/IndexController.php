@@ -40,7 +40,7 @@ class IndexController extends AbstractActionController
 
     public function indexAction()
     {
-        $this->setBrowseDefaults('title');
+        $this->setBrowseDefaults('title', 'asc');
         $response = $this->api()->search('sites', $this->params()->fromQuery());
         $this->paginator($response->getTotalResults(), $this->params()->fromQuery('page'));
 
@@ -149,7 +149,7 @@ class IndexController extends AbstractActionController
     public function addPageAction()
     {
         $site = $this->currentSite();
-        $form = $this->getForm(SitePageForm::class, ['addPage' => true]);
+        $form = $this->getForm(SitePageForm::class, ['addPage' => $site->userIsAllowed('update')]);
 
         if ($this->getRequest()->isPost()) {
             $form->setData($this->params()->fromPost());
@@ -446,7 +446,6 @@ class IndexController extends AbstractActionController
         $this->setBrowseDefaults('created');
         $site = $this->currentSite();
 
-        $itemPool = is_array($site->itemPool()) ? $site->itemPool() : [];
         $query = $this->params()->fromQuery();
         $query['site_id'] = $site->id();
 
